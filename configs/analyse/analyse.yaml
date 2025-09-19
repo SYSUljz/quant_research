@@ -1,0 +1,16 @@
+executor:
+  class: "SimulatorExecutor"
+  module_path: "qlib.backtest.executor"
+  kwargs:
+    time_per_step: "day"
+    generate_portfolio_metrics: true
+
+strategy:
+  class: "TopkDropoutStrategy"
+  module_path: "qlib.contrib.strategy.signal_strategy"
+  kwargs:
+    signal: "<PRED>"
+    topk: 50
+    n_drop: 5
+
+

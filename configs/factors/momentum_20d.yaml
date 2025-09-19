@@ -1,0 +1,9 @@
+factor_formula: "Ref($close, -20)/$close - 1"
+factor_name: "momentum_20d"
+
+factor_config:
+  class: "SingleFactorModel"
+  module_path: "factors.base_factor_model"
+  kwargs:
+    factor_name: "momentum_20d"
+    factor_formula: "Ref($close, -20)/$close - 1"
