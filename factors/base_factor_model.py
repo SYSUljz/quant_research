@@ -1,10 +1,14 @@
 from qlib.model.base import Model
+from qlib.data.dataset import Dataset, DatasetH
+import pandas as pd
+from qlib.data import D
+
 class SingleFactorModel(Model):
     """
     A custom model that calculates a factor based on a given formula and then
     generates a trading signal by selecting the top quantile of scores each day.
     """
-    def __init__(self, factor_formula: str, quantile: float):
+    def __init__(self, factor_formula: str):
         """
         Initializes the SingleFactorModel.
 
@@ -13,7 +17,7 @@ class SingleFactorModel(Model):
             quantile (float): The quantile of top stocks to select for the signal (e.g., 0.2 for top 20%).
         """
         self.factor_formula = factor_formula
-        self.quantile = quantile
+
 
     def fit(self, dataset: Dataset):
         # This is a simple factor model, so no training ("fitting") is required.
@@ -49,13 +53,4 @@ class SingleFactorModel(Model):
         if factor_df.empty:
             print("Warning: Factor calculation resulted in an empty DataFrame.")
             return pd.DataFrame(columns=["score"])
-
-        # 2. Convert the raw factor into a trading signal by selecting the top quantile
-        # Calculate the daily quantile threshold
-        threshold = factor_df.groupby(level='datetime')["score"].transform(
-            lambda x: x.quantile(1 - self.quantile)
-        )
-        # Filter for scores that are above the daily threshold
-        trading_signal = factor_df[factor_df["score"] >= threshold]
-
-        return trading_signal
+        return factor_df

@@ -17,15 +17,22 @@ from configs.config import CSI300_BENCH, CSI300_GBDT_TASK
 from qlib.data.dataset import Dataset, DatasetH
 from qlib.data import D
 import pandas as pd
-
+import yaml
 if __name__ == "__main__":
     # use default data
     provider_uri = "~/.qlib/qlib_data/cn_data"  # target_dir
     GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
     qlib.init(provider_uri=provider_uri, region=REG_CN)
     factor_formula = "Ref($close, -20)/$close - 1"
-    model = SingleFactorModel(factor_formula=factor_formula, quantile=0.2)
+    #model = SingleFactorModel(factor_formula=factor_formula, quantile=0.2)
     #model = init_instance_by_config(CSI300_GBDT_TASK["model"])
+    with open("configs/factors/momentum_20d.yaml", "r") as f:
+        cfg = yaml.safe_load(f)
+
+    # Extract factor_config
+    factor_cfg = cfg["factor_config"]
+    model = init_instance_by_config(factor_cfg)
+
     dataset = init_instance_by_config(CSI300_GBDT_TASK["dataset"])
 
     port_analysis_config = {
@@ -72,14 +79,14 @@ if __name__ == "__main__":
     #####################
     #train
     ####################
-    with R.start(experiment_name="workflow_alpha"):
-        R.log_params(**flatten_dict(CSI300_GBDT_TASK))
+    with R.start(experiment_name="momentum_20d"):
+        #R.log_params(**flatten_dict(CSI300_GBDT_TASK))
 
-        # 训练模型
-        model.fit(dataset)
+        # # 训练模型
+        # model.fit(dataset)
 
-        # 保存训练好的模型
-        R.save_objects(**{"model.pkl": model})
+        # # 保存训练好的模型
+        # R.save_objects(**{"model.pkl": model})
         recorder = R.get_recorder()
         # 生成预测并记录
         sr = SignalRecord(model, dataset, recorder)
