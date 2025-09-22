@@ -5,4 +5,4 @@ factor_config:
   class: "SingleFactorModel"
   module_path: "factors.base_factor_model"
   kwargs:
-    factor_formula: "Ref($close, -20)/$close - 1"
+    factor_formula: "Ref($close, 20)/Ref($close,1)"

@@ -18,6 +18,9 @@ from qlib.data.dataset import Dataset, DatasetH
 from qlib.data import D
 import pandas as pd
 import yaml
+from visualization import generate_report
+
+from visualization import generate_report
 if __name__ == "__main__":
     # use default data
     provider_uri = "~/.qlib/qlib_data/cn_data"  # target_dir
@@ -96,7 +99,11 @@ if __name__ == "__main__":
 
         par = PortAnaRecord(recorder, port_analysis_config, "day")
         par.generate()
-
+    generate_report(
+        recorder_id=recorder.id,
+        experiment_name="momentum_20d",
+        output_dir="report_results"
+    )
     #####################
     # prediction
     ####################
