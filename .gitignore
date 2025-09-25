@@ -3,3 +3,9 @@ __pycache__/
 venv/
 *.yaml
 /mlruns
+/report_results
+*.csv
+ToDo.txt
+.env
+.DS_Store
+*.txt
