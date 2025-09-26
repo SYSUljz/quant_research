@@ -9,3 +9,4 @@ ToDo.txt
 .env
 .DS_Store
 *.txt
+*.db
