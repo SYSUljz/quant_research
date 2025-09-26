@@ -3,11 +3,13 @@ from qlib.data.dataset import Dataset, DatasetH
 import pandas as pd
 from qlib.data import D
 
+
 class SingleFactorModel(Model):
     """
     A custom model that calculates a factor based on a given formula and then
     generates a trading signal by selecting the top quantile of scores each day.
     """
+
     def __init__(self, factor_formula: str):
         """
         Initializes the SingleFactorModel.
@@ -17,7 +19,6 @@ class SingleFactorModel(Model):
             quantile (float): The quantile of top stocks to select for the signal (e.g., 0.2 for top 20%).
         """
         self.factor_formula = factor_formula
-
 
     def fit(self, dataset: Dataset):
         # This is a simple factor model, so no training ("fitting") is required.
@@ -48,7 +49,7 @@ class SingleFactorModel(Model):
             start_time=start_time,
             end_time=end_time,
         ).rename(columns={self.factor_formula: "score"})
-        if factor_df.index.names[0] == 'instrument':
+        if factor_df.index.names[0] == "instrument":
             factor_df = factor_df.swaplevel().sort_index()
         if factor_df.empty:
             print("Warning: Factor calculation resulted in an empty DataFrame.")
