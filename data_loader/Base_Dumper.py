@@ -39,8 +39,9 @@ class DumpDataBase(abc.ABC):
         exclude_fields: str = "",
         include_fields: str = "",
         limit_nums: int = None,
+        table_name: str = None,
     ):
-        data_path = Path(data_path).expanduser()
+        data_path_obj = Path(data_path).expanduser()
         if isinstance(exclude_fields, str):
             exclude_fields = exclude_fields.split(",")
         if isinstance(include_fields, str):
@@ -53,13 +54,32 @@ class DumpDataBase(abc.ABC):
         )
         self.file_suffix = file_suffix
         self.symbol_field_name = symbol_field_name
-        self.df_files = sorted(
-            data_path.glob(f"*{self.file_suffix}")
-            if data_path.is_dir()
-            else [data_path]
-        )
-        if limit_nums is not None:
-            self.df_files = self.df_files[: int(limit_nums)]
+        self.table_name = table_name
+        self.is_db_source = False
+        self.data_groups = []
+
+        if data_path_obj.suffix.lower() == ".db":
+            self.is_db_source = True
+            all_df = read_as_df(data_path_obj, table_name=self.table_name)
+            if self.symbol_field_name not in all_df.columns:
+                raise ValueError(
+                    f"Symbol field '{self.symbol_field_name}' not found in the database table."
+                )
+            self.data_groups = [
+                group for _, group in all_df.groupby(self.symbol_field_name)
+            ]
+            self.df_files = [data_path_obj]
+            if limit_nums is not None:
+                self.data_groups = self.data_groups[: int(limit_nums)]
+        else:
+            self.df_files = sorted(
+                data_path_obj.glob(f"*{self.file_suffix}")
+                if data_path_obj.is_dir()
+                else [data_path_obj]
+            )
+            if limit_nums is not None:
+                self.df_files = self.df_files[: int(limit_nums)]
+
         self.qlib_dir = Path(qlib_dir).expanduser()
         self.backup_dir = (
             backup_dir if backup_dir is None else Path(backup_dir).expanduser()

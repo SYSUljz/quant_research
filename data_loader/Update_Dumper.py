@@ -26,6 +26,7 @@ class DumpDataUpdate(DumpDataBase):
         exclude_fields: str = "",
         include_fields: str = "",
         limit_nums: int = None,
+        table_name: str = None,
     ):
         super().__init__(
             data_path,
@@ -39,6 +40,7 @@ class DumpDataUpdate(DumpDataBase):
             exclude_fields,
             include_fields,
             limit_nums,
+            table_name,
         )
         self._mode = self.UPDATE_MODE
         self._old_calendar_list = self._read_calendars(
@@ -62,6 +64,11 @@ class DumpDataUpdate(DumpDataBase):
 
     def _load_all_source_data(self):
         logger.info("start load all source data....")
+        if self.is_db_source:
+            logger.info("loading from db groups in memory....")
+            df = pd.concat(self.data_groups, sort=False)
+            logger.info("end of load all data.\n")
+            return df
         all_df = []
 
         def _read_df(file_path: Path):
@@ -123,7 +130,7 @@ class DumpDataUpdate(DumpDataBase):
                     )
                     _dt_range[self.INSTRUMENTS_END_FIELD] = self._format_datetime(_end)
                     futures[
-                        executor.submit(self._dump_bin, _df, self.new_calendar_list)
+                        executor.submit(self._dump_bin, _df, self._new_calendar_list)
                     ] = _code
 
             with tqdm(total=len(futures)) as p_bar:

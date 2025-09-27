@@ -29,7 +29,9 @@
                 "--symbol_field_name",
                 "symbol",
                 "--include_fields",
-                "open,close,high,low,volume,adj_factor"
+                "open,close,high,low,volume,adj_factor",
+                "--table_name",
+                "stock_data",
             ]
         }
     ]
