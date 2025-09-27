@@ -12,6 +12,25 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "pythonPath": "/Users/jackli/miniconda3/envs/qlib/bin/python",
+        },
+        {
+            "name": "dump_all_test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "pythonPath": "/Users/jackli/miniconda3/envs/qlib/bin/python",
+            "console": "integratedTerminal",
+            "args": [
+                "dump_all",
+                "--data_path",
+                "data_handler/features/stocks.db",
+                "--qlib_dir",
+                ".qlib/qlib_data/cn_data",
+                "--symbol_field_name",
+                "symbol",
+                "--include_fields",
+                "open,close,high,low,volume,adj_factor"
+            ]
         }
     ]
 }

@@ -1,5 +1,3 @@
-
-
 import abc
 import shutil
 from pathlib import Path
@@ -10,7 +8,7 @@ import pandas as pd
 from loguru import logger
 
 from data_loader import read_as_df
-from qlib_utils import fname_to_code, code_to_fname
+from qlib.utils import fname_to_code, code_to_fname
 
 
 class DumpDataBase(abc.ABC):
@@ -47,20 +45,32 @@ class DumpDataBase(abc.ABC):
             exclude_fields = exclude_fields.split(",")
         if isinstance(include_fields, str):
             include_fields = include_fields.split(",")
-        self._exclude_fields = tuple(filter(lambda x: len(x) > 0, map(str.strip, exclude_fields)))
-        self._include_fields = tuple(filter(lambda x: len(x) > 0, map(str.strip, include_fields)))
+        self._exclude_fields = tuple(
+            filter(lambda x: len(x) > 0, map(str.strip, exclude_fields))
+        )
+        self._include_fields = tuple(
+            filter(lambda x: len(x) > 0, map(str.strip, include_fields))
+        )
         self.file_suffix = file_suffix
         self.symbol_field_name = symbol_field_name
-        self.df_files = sorted(data_path.glob(f"*{self.file_suffix}") if data_path.is_dir() else [data_path])
+        self.df_files = sorted(
+            data_path.glob(f"*{self.file_suffix}")
+            if data_path.is_dir()
+            else [data_path]
+        )
         if limit_nums is not None:
             self.df_files = self.df_files[: int(limit_nums)]
         self.qlib_dir = Path(qlib_dir).expanduser()
-        self.backup_dir = backup_dir if backup_dir is None else Path(backup_dir).expanduser()
+        self.backup_dir = (
+            backup_dir if backup_dir is None else Path(backup_dir).expanduser()
+        )
         if backup_dir is not None:
             self._backup_qlib_dir(Path(backup_dir).expanduser())
 
         self.freq = freq
-        self.calendar_format = self.DAILY_FORMAT if self.freq == "day" else self.HIGH_FREQ_FORMAT
+        self.calendar_format = (
+            self.DAILY_FORMAT if self.freq == "day" else self.HIGH_FREQ_FORMAT
+        )
 
         self.works = max_workers
         self.date_field_name = date_field_name
@@ -82,7 +92,11 @@ class DumpDataBase(abc.ABC):
         return datetime_d.strftime(self.calendar_format)
 
     def _get_date(
-        self, file_or_df: [Path, pd.DataFrame], *, is_begin_end: bool = False, as_set: bool = False
+        self,
+        file_or_df: [Path, pd.DataFrame],
+        *,
+        is_begin_end: bool = False,
+        as_set: bool = False,
     ) -> Iterable[pd.Timestamp]:
         if not isinstance(file_or_df, pd.DataFrame):
             df = self._get_source_data(file_or_df)
@@ -115,7 +129,11 @@ class DumpDataBase(abc.ABC):
         return (
             self._include_fields
             if self._include_fields
-            else set(df_columns) - set(self._exclude_fields) if self._exclude_fields else df_columns
+            else (
+                set(df_columns) - set(self._exclude_fields)
+                if self._exclude_fields
+                else df_columns
+            )
         )
 
     @staticmethod
@@ -141,26 +159,40 @@ class DumpDataBase(abc.ABC):
 
     def save_calendars(self, calendars_data: list):
         self._calendars_dir.mkdir(parents=True, exist_ok=True)
-        calendars_path = str(self._calendars_dir.joinpath(f"{self.freq}.txt").expanduser().resolve())
+        calendars_path = str(
+            self._calendars_dir.joinpath(f"{self.freq}.txt").expanduser().resolve()
+        )
         result_calendars_list = [self._format_datetime(x) for x in calendars_data]
         np.savetxt(calendars_path, result_calendars_list, fmt="%s", encoding="utf-8")
 
     def save_instruments(self, instruments_data: Union[list, pd.DataFrame]):
         self._instruments_dir.mkdir(parents=True, exist_ok=True)
-        instruments_path = str(self._instruments_dir.joinpath(self.INSTRUMENTS_FILE_NAME).resolve())
+        instruments_path = str(
+            self._instruments_dir.joinpath(self.INSTRUMENTS_FILE_NAME).resolve()
+        )
         if isinstance(instruments_data, pd.DataFrame):
-            _df_fields = [self.symbol_field_name, self.INSTRUMENTS_START_FIELD, self.INSTRUMENTS_END_FIELD]
+            _df_fields = [
+                self.symbol_field_name,
+                self.INSTRUMENTS_START_FIELD,
+                self.INSTRUMENTS_END_FIELD,
+            ]
             instruments_data = instruments_data.loc[:, _df_fields]
-            instruments_data[self.symbol_field_name] = instruments_data[self.symbol_field_name].apply(
-                lambda x: fname_to_code(x.lower()).upper()
+            instruments_data[self.symbol_field_name] = instruments_data[
+                self.symbol_field_name
+            ].apply(lambda x: fname_to_code(x.lower()).upper())
+            instruments_data.to_csv(
+                instruments_path, header=False, sep=self.INSTRUMENTS_SEP, index=False
             )
-            instruments_data.to_csv(instruments_path, header=False, sep=self.INSTRUMENTS_SEP, index=False)
         else:
             np.savetxt(instruments_path, instruments_data, fmt="%s", encoding="utf-8")
 
-    def data_merge_calendar(self, df: pd.DataFrame, calendars_list: List[pd.Timestamp]) -> pd.DataFrame:
+    def data_merge_calendar(
+        self, df: pd.DataFrame, calendars_list: List[pd.Timestamp]
+    ) -> pd.DataFrame:
         calendars_df = pd.DataFrame(data=calendars_list, columns=[self.date_field_name])
-        calendars_df[self.date_field_name] = calendars_df[self.date_field_name].astype("datetime64[ns]")
+        calendars_df[self.date_field_name] = calendars_df[self.date_field_name].astype(
+            "datetime64[ns]"
+        )
         cal_df = calendars_df[
             (calendars_df[self.date_field_name] >= df[self.date_field_name].min())
             & (calendars_df[self.date_field_name] <= df[self.date_field_name].max())
@@ -173,7 +205,9 @@ class DumpDataBase(abc.ABC):
     def get_datetime_index(df: pd.DataFrame, calendar_list: List[pd.Timestamp]) -> int:
         return calendar_list.index(df.index.min())
 
-    def _data_to_bin(self, df: pd.DataFrame, calendar_list: List[pd.Timestamp], features_dir: Path):
+    def _data_to_bin(
+        self, df: pd.DataFrame, calendar_list: List[pd.Timestamp], features_dir: Path
+    ):
         if df.empty:
             logger.warning(f"{features_dir.name} data is None or empty")
             return
@@ -186,23 +220,31 @@ class DumpDataBase(abc.ABC):
             return
         date_index = self.get_datetime_index(_df, calendar_list)
         for field in self.get_dump_fields(_df.columns):
-            bin_path = features_dir.joinpath(f"{field.lower()}.{self.freq}{self.DUMP_FILE_SUFFIX}")
+            bin_path = features_dir.joinpath(
+                f"{field.lower()}.{self.freq}{self.DUMP_FILE_SUFFIX}"
+            )
             if field not in _df.columns:
                 continue
             if bin_path.exists() and self._mode == self.UPDATE_MODE:
                 with bin_path.open("ab") as fp:
                     np.array(_df[field]).astype("<f").tofile(fp)
             else:
-                np.hstack([date_index, _df[field]]).astype("<f").tofile(str(bin_path.resolve()))
+                np.hstack([date_index, _df[field]]).astype("<f").tofile(
+                    str(bin_path.resolve())
+                )
 
-    def _dump_bin(self, file_or_data: [Path, pd.DataFrame], calendar_list: List[pd.Timestamp]):
+    def _dump_bin(
+        self, file_or_data: [Path, pd.DataFrame], calendar_list: List[pd.Timestamp]
+    ):
         if not calendar_list:
             logger.warning("calendar_list is empty")
             return
         if isinstance(file_or_data, pd.DataFrame):
             if file_or_data.empty:
                 return
-            code = fname_to_code(str(file_or_data.iloc[0][self.symbol_field_name]).lower())
+            code = fname_to_code(
+                str(file_or_data.iloc[0][self.symbol_field_name]).lower()
+            )
             df = file_or_data
         elif isinstance(file_or_data, Path):
             code = self.get_symbol_from_file(file_or_data)

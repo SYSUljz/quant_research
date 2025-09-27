@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from base_dumper import DumpDataBase
 from data_loader import read_as_df
-from qlib_utils import fname_to_code
+from qlib.utils import fname_to_code
 
 
 class DumpDataUpdate(DumpDataBase):
