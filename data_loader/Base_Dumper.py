@@ -123,7 +123,7 @@ class DumpDataBase(abc.ABC):
         else:
             df = file_or_df
         if df.empty or self.date_field_name not in df.columns.tolist():
-            _calendars = pd.Series(dtype=np.float32)
+            raise ValueError(f"data is empty or {self.date_field_name} not in columns")
         else:
             _calendars = _calendars = pd.to_datetime(
                 df[self.date_field_name].astype(str),
