@@ -125,7 +125,11 @@ class DumpDataBase(abc.ABC):
         if df.empty or self.date_field_name not in df.columns.tolist():
             _calendars = pd.Series(dtype=np.float32)
         else:
-            _calendars = df[self.date_field_name]
+            _calendars = _calendars = pd.to_datetime(
+                df[self.date_field_name].astype(str),
+                format="%Y%m%d",
+                errors="coerce",
+            )
 
         if is_begin_end and as_set:
             return (_calendars.min(), _calendars.max()), set(_calendars)
