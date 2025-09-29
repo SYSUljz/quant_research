@@ -57,16 +57,31 @@ class DumpDataBase(abc.ABC):
         self.table_name = table_name
         self.is_db_source = False
         self.data_groups = []
+        self.date_field_name = date_field_name
 
         if data_path_obj.suffix.lower() == ".db":
             self.is_db_source = True
             all_df = read_as_df(data_path_obj, table_name=self.table_name)
+
+            if self.date_field_name in all_df.columns:
+                all_df[self.date_field_name] = pd.to_datetime(
+                    all_df[self.date_field_name].astype(str),
+                    format="%Y%m%d",
+                    errors="coerce",
+                )
+                all_df.dropna(subset=[self.date_field_name], inplace=True)
+            else:
+                raise ValueError(
+                    f"Date field '{self.date_field_name}' not found in the database table."
+                )
+
             if self.symbol_field_name not in all_df.columns:
                 raise ValueError(
                     f"Symbol field '{self.symbol_field_name}' not found in the database table."
                 )
+            # Use .copy() to avoid potential SettingWithCopyWarning later
             self.data_groups = [
-                group for _, group in all_df.groupby(self.symbol_field_name)
+                group.copy() for _, group in all_df.groupby(self.symbol_field_name)
             ]
             self.df_files = [data_path_obj]
             if limit_nums is not None:
@@ -125,11 +140,17 @@ class DumpDataBase(abc.ABC):
         if df.empty or self.date_field_name not in df.columns.tolist():
             raise ValueError(f"data is empty or {self.date_field_name} not in columns")
         else:
-            _calendars = _calendars = pd.to_datetime(
-                df[self.date_field_name].astype(str),
-                format="%Y%m%d",
-                errors="coerce",
-            )
+
+            date_col = df[self.date_field_name]
+            if pd.api.types.is_datetime64_any_dtype(date_col):
+                _calendars = date_col
+            else:
+                _calendars = pd.to_datetime(
+                    date_col.astype(str),
+                    format="%Y%m%d",
+                    errors="coerce",
+                )
+            _calendars = _calendars.dropna()
 
         if is_begin_end and as_set:
             return (_calendars.min(), _calendars.max()), set(_calendars)
@@ -143,7 +164,11 @@ class DumpDataBase(abc.ABC):
     def _get_source_data(self, file_path: Path) -> pd.DataFrame:
         df = read_as_df(file_path, low_memory=False)
         if self.date_field_name in df.columns:
-            df[self.date_field_name] = pd.to_datetime(df[self.date_field_name])
+
+            df[self.date_field_name] = pd.to_datetime(
+                df[self.date_field_name].astype(str), format="%Y%m%d", errors="coerce"
+            )
+            df.dropna(subset=[self.date_field_name], inplace=True)
         return df
 
     def get_symbol_from_file(self, file_path: Path) -> str:

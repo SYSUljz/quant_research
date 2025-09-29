@@ -21,14 +21,15 @@ import yaml
 from visualization import generate_report
 
 from visualization import generate_report
+
 if __name__ == "__main__":
     # use default data
-    provider_uri = "~/.qlib/qlib_data/cn_data"  # target_dir
+    provider_uri = "/Users/jackli/Desktop/python/quant-research/.qlib/qlib_data/cn_data"  # target_dir
     GetData().qlib_data(target_dir=provider_uri, region=REG_CN, exists_skip=True)
     qlib.init(provider_uri=provider_uri, region=REG_CN)
     factor_formula = "Ref($close, -20)/$close - 1"
-    #model = SingleFactorModel(factor_formula=factor_formula, quantile=0.2)
-    #model = init_instance_by_config(CSI300_GBDT_TASK["model"])
+    # model = SingleFactorModel(factor_formula=factor_formula, quantile=0.2)
+    # model = init_instance_by_config(CSI300_GBDT_TASK["model"])
     with open("configs/factors/momentum_20d.yaml", "r") as f:
         cfg = yaml.safe_load(f)
 
@@ -80,10 +81,10 @@ if __name__ == "__main__":
     # start exp
 
     #####################
-    #train
+    # train
     ####################
     with R.start(experiment_name="momentum_20d"):
-        #R.log_params(**flatten_dict(CSI300_GBDT_TASK))
+        # R.log_params(**flatten_dict(CSI300_GBDT_TASK))
 
         # # 训练模型
         # model.fit(dataset)
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     generate_report(
         recorder_id=recorder.id,
         experiment_name="momentum_20d",
-        output_dir="report_results"
+        output_dir="report_results",
     )
     #####################
     # prediction
@@ -147,4 +148,3 @@ if __name__ == "__main__":
 
     #     par = PortAnaRecord(recorder, port_analysis_config, "day")
     #     par.generate()
-    

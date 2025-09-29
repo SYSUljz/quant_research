@@ -4,7 +4,9 @@
 CSI300_MARKET = "csi300"
 CSI100_MARKET = "csi100"
 
-CSI300_BENCH = "SH000300"
+# CSI300_BENCH = "SH000300"
+CSI300_BENCH = "002411.SZ"
+
 
 DATASET_ALPHA158_CLASS = "Alpha158"
 DATASET_ALPHA360_CLASS = "Alpha360"
@@ -51,7 +53,7 @@ RECORD_CONFIG = [
 
 
 def get_data_handler_config(
-    start_time="2008-01-01",
+    start_time="2018-01-01",
     end_time="2020-08-01",
     fit_start_time="<dataset.kwargs.segments.train.0>",
     fit_end_time="<dataset.kwargs.segments.train.1>",
@@ -68,9 +70,9 @@ def get_data_handler_config(
 
 def get_dataset_config(
     dataset_class=DATASET_ALPHA158_CLASS,
-    train=("2008-01-01", "2014-12-31"),
-    valid=("2015-01-01", "2016-12-31"),
-    test=("2017-01-01", "2020-08-01"),
+    train=("2018-01-01", "2019-12-31"),
+    valid=("2019-01-01", "2019-12-31"),
+    test=("2020-01-01", "2020-08-01"),
     handler_kwargs={"instruments": CSI300_MARKET},
 ):
     return {
@@ -98,7 +100,9 @@ def get_gbdt_task(dataset_kwargs={}, handler_kwargs={"instruments": CSI300_MARKE
     }
 
 
-def get_record_lgb_config(dataset_kwargs={}, handler_kwargs={"instruments": CSI300_MARKET}):
+def get_record_lgb_config(
+    dataset_kwargs={}, handler_kwargs={"instruments": CSI300_MARKET}
+):
     return {
         "model": {
             "class": "LGBModel",
@@ -109,7 +113,9 @@ def get_record_lgb_config(dataset_kwargs={}, handler_kwargs={"instruments": CSI3
     }
 
 
-def get_record_xgboost_config(dataset_kwargs={}, handler_kwargs={"instruments": CSI300_MARKET}):
+def get_record_xgboost_config(
+    dataset_kwargs={}, handler_kwargs={"instruments": CSI300_MARKET}
+):
     return {
         "model": {
             "class": "XGBModel",
@@ -120,24 +126,30 @@ def get_record_xgboost_config(dataset_kwargs={}, handler_kwargs={"instruments": 
     }
 
 
-CSI300_DATASET_CONFIG = get_dataset_config(handler_kwargs={"instruments": CSI300_MARKET})
+CSI300_DATASET_CONFIG = get_dataset_config(
+    handler_kwargs={"instruments": CSI300_MARKET}
+)
 CSI300_GBDT_TASK = get_gbdt_task(handler_kwargs={"instruments": CSI300_MARKET})
 
-CSI100_RECORD_XGBOOST_TASK_CONFIG = get_record_xgboost_config(handler_kwargs={"instruments": CSI100_MARKET})
-CSI100_RECORD_LGB_TASK_CONFIG = get_record_lgb_config(handler_kwargs={"instruments": CSI100_MARKET})
+CSI100_RECORD_XGBOOST_TASK_CONFIG = get_record_xgboost_config(
+    handler_kwargs={"instruments": CSI100_MARKET}
+)
+CSI100_RECORD_LGB_TASK_CONFIG = get_record_lgb_config(
+    handler_kwargs={"instruments": CSI100_MARKET}
+)
 
 # use for rolling_online_managment.py
 ROLLING_HANDLER_CONFIG = {
-    "start_time": "2013-01-01",
-    "end_time": "2020-09-25",
-    "fit_start_time": "2013-01-01",
-    "fit_end_time": "2014-12-31",
+    "start_time": "2017-01-01",
+    "end_time": "2023-09-25",
+    "fit_start_time": "2017-01-01",
+    "fit_end_time": "2018-12-31",
     "instruments": CSI100_MARKET,
 }
 ROLLING_DATASET_CONFIG = {
-    "train": ("2013-01-01", "2014-12-31"),
-    "valid": ("2015-01-01", "2015-12-31"),
-    "test": ("2016-01-01", "2020-07-10"),
+    "train": ("2017-01-01", "2018-12-31"),
+    "valid": ("2019-01-01", "2019-12-31"),
+    "test": ("2020-01-01", "2020-07-10"),
 }
 CSI100_RECORD_XGBOOST_TASK_CONFIG_ROLLING = get_record_xgboost_config(
     dataset_kwargs=ROLLING_DATASET_CONFIG, handler_kwargs=ROLLING_HANDLER_CONFIG
