@@ -12,6 +12,10 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "pythonPath": "/Users/jackli/miniconda3/envs/qlib/bin/python",
+            "args": [
+                "--config_path",
+                "./config.yaml"
+            ]
         },
         {
             "name": "dump_all_test",
@@ -24,7 +28,6 @@
                 "dump_all",
                 "--data_path",
                 "data_handler/features/stocks.db",
-                //"mongodb_data/",
                 "--qlib_dir",
                 ".qlib/qlib_data/cn_data",
                 "--symbol_field_name",
