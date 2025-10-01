@@ -16,7 +16,7 @@ provider_uri = (
 qlib.init(provider_uri=provider_uri, region=REG_CN)
 df = D.features(
     ["000009.SZ"],
-    ["$open", "$high", "$low", "$close", "$factor"],
+    ["$open", "$high", "$low", "$close", "$adj_factor"],
     start_time="2020-05-01",
     end_time="2020-05-31",
 )
